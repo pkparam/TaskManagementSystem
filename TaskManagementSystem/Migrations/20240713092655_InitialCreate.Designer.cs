@@ -11,7 +11,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace TaskManagementSystem.Migrations
 {
     [DbContext(typeof(TaskManagementContext))]
-    [Migration("20240710183437_InitialCreate")]
+    [Migration("20240713092655_InitialCreate")]
     partial class InitialCreate
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -75,6 +75,50 @@ namespace TaskManagementSystem.Migrations
                     b.ToTable("Notes");
                 });
 
+            modelBuilder.Entity("TaskManagementSystem.Models.Team", b =>
+                {
+                    b.Property<int>("TeamId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("TeamId"), 1L, 1);
+
+                    b.Property<int>("LeaderId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("TeamName")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("TeamId");
+
+                    b.HasIndex("LeaderId");
+
+                    b.ToTable("Teams");
+                });
+
+            modelBuilder.Entity("TaskManagementSystem.Models.TeamMembership", b =>
+                {
+                    b.Property<int>("TeamMembershipId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("TeamMembershipId"), 1L, 1);
+
+                    b.Property<int>("TeamId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("UserId")
+                        .HasColumnType("int");
+
+                    b.HasKey("TeamMembershipId");
+
+                    b.HasIndex("TeamId");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("TeamMemberships");
+                });
+
             modelBuilder.Entity("TaskManagementSystem.Models.User", b =>
                 {
                     b.Property<int>("UserId")
@@ -84,15 +128,12 @@ namespace TaskManagementSystem.Migrations
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("UserId"), 1L, 1);
 
                     b.Property<string>("Email")
-                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("Role")
-                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<string>("Username")
-                        .IsRequired()
+                    b.Property<string>("UserName")
                         .HasColumnType("nvarchar(max)");
 
                     b.HasKey("UserId");
@@ -118,18 +159,15 @@ namespace TaskManagementSystem.Migrations
                         .HasColumnType("datetime2");
 
                     b.Property<string>("Description")
-                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<DateTime>("DueDate")
                         .HasColumnType("datetime2");
 
                     b.Property<string>("Status")
-                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("Title")
-                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<DateTime>("UpdatedDate")
@@ -137,7 +175,62 @@ namespace TaskManagementSystem.Migrations
 
                     b.HasKey("TaskId");
 
+                    b.HasIndex("AssignedTo");
+
                     b.ToTable("Tasks");
+                });
+
+            modelBuilder.Entity("TaskManagementSystem.Models.Team", b =>
+                {
+                    b.HasOne("TaskManagementSystem.Models.User", "Leader")
+                        .WithMany()
+                        .HasForeignKey("LeaderId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Leader");
+                });
+
+            modelBuilder.Entity("TaskManagementSystem.Models.TeamMembership", b =>
+                {
+                    b.HasOne("TaskManagementSystem.Models.Team", "Team")
+                        .WithMany("Members")
+                        .HasForeignKey("TeamId")
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .IsRequired();
+
+                    b.HasOne("TaskManagementSystem.Models.User", "User")
+                        .WithMany("Teams")
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .IsRequired();
+
+                    b.Navigation("Team");
+
+                    b.Navigation("User");
+                });
+
+            modelBuilder.Entity("TaskManagementSystem.Models.UserTask", b =>
+                {
+                    b.HasOne("TaskManagementSystem.Models.User", "AssignedUser")
+                        .WithMany("AssignedTasks")
+                        .HasForeignKey("AssignedTo")
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .IsRequired();
+
+                    b.Navigation("AssignedUser");
+                });
+
+            modelBuilder.Entity("TaskManagementSystem.Models.Team", b =>
+                {
+                    b.Navigation("Members");
+                });
+
+            modelBuilder.Entity("TaskManagementSystem.Models.User", b =>
+                {
+                    b.Navigation("AssignedTasks");
+
+                    b.Navigation("Teams");
                 });
 #pragma warning restore 612, 618
         }

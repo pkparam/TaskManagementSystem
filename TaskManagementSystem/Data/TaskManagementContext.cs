@@ -32,16 +32,19 @@ public class TaskManagementContext : DbContext
         modelBuilder.Entity<TeamMembership>()
             .HasOne(tm => tm.Team)
             .WithMany(t => t.Members)
-            .HasForeignKey(tm => tm.TeamId);
+            .HasForeignKey(tm => tm.TeamId)
+            .OnDelete(DeleteBehavior.NoAction);
 
         modelBuilder.Entity<TeamMembership>()
             .HasOne(tm => tm.User)
             .WithMany(u => u.Teams)
-            .HasForeignKey(tm => tm.UserId);
+            .HasForeignKey(tm => tm.UserId)
+            .OnDelete(DeleteBehavior.NoAction);
 
         modelBuilder.Entity<UserTask>()
             .HasOne(ut => ut.AssignedUser)
             .WithMany(u => u.AssignedTasks)
-            .HasForeignKey(ut => ut.AssignedTo);
+            .HasForeignKey(ut => ut.AssignedTo)
+            .OnDelete(DeleteBehavior.NoAction);
     }
 }
