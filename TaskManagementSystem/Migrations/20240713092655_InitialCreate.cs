@@ -57,7 +57,7 @@ namespace TaskManagementSystem.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "Tasks",
+                name: "UserTask",
                 columns: table => new
                 {
                     TaskId = table.Column<int>(type: "int", nullable: false)
@@ -65,17 +65,20 @@ namespace TaskManagementSystem.Migrations
                     Title = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     Description = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     Status = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    Priority = table.Column<string>(type: "nvarchar(50)", nullable: true),
                     DueDate = table.Column<DateTime>(type: "datetime2", nullable: false),
                     CreatedBy = table.Column<int>(type: "int", nullable: false),
                     AssignedTo = table.Column<int>(type: "int", nullable: false),
+                    ManagerId = table.Column<int>(type: "int", nullable: false),
+                    AssignedEmployeeId = table.Column<int>(type: "int", nullable: false),
                     CreatedDate = table.Column<DateTime>(type: "datetime2", nullable: false),
                     UpdatedDate = table.Column<DateTime>(type: "datetime2", nullable: false)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_Tasks", x => x.TaskId);
+                    table.PrimaryKey("PK_UserTask", x => x.TaskId);
                     table.ForeignKey(
-                        name: "FK_Tasks_Users_AssignedTo",
+                        name: "FK_UserTask_Users_AssignedTo",
                         column: x => x.AssignedTo,
                         principalTable: "Users",
                         principalColumn: "UserId");
@@ -126,8 +129,8 @@ namespace TaskManagementSystem.Migrations
                 });
 
             migrationBuilder.CreateIndex(
-                name: "IX_Tasks_AssignedTo",
-                table: "Tasks",
+                name: "IX_UserTask_AssignedTo",
+                table: "UserTask",
                 column: "AssignedTo");
 
             migrationBuilder.CreateIndex(
@@ -155,7 +158,7 @@ namespace TaskManagementSystem.Migrations
                 name: "Notes");
 
             migrationBuilder.DropTable(
-                name: "Tasks");
+                name: "UserTask");
 
             migrationBuilder.DropTable(
                 name: "TeamMemberships");

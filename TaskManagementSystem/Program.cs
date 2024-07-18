@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.DependencyInjection.Extensions;
+using TaskManagementSystem.Interfaces;
+using TaskManagementSystem.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -12,6 +13,11 @@ builder.Services.AddSwaggerGen();
 
 builder.Services.AddDbContext<TaskManagementContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("SqlConnection")));
+
+builder.Services.AddScoped<IUserService, UserService>();
+builder.Services.AddScoped<ITeamService, TeamService>();
+builder.Services.AddScoped<ITaskService, TaskService>();
+builder.Services.AddScoped<IReportService, ReportService>(); // Register the report service
 
 var app = builder.Build();
 

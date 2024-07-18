@@ -1,108 +1,79 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 using TaskManagementSystem.Models;
 
 [Route("api/[controller]")]
 [ApiController]
 public class TasksController : ControllerBase
 {
-    private readonly TaskManagementContext _context;
+    private readonly ITaskService _taskService;
 
-    public TasksController(TaskManagementContext context)
+    public TasksController(ITaskService taskService)
     {
-        _context = context;
+        _taskService = taskService;
     }
 
     // GET: api/Tasks
     [HttpGet]
     public async Task<ActionResult<IEnumerable<UserTask>>> GetTasks()
     {
-        return await _context.Tasks.ToListAsync();
+        var tasks = await _taskService.GetAllTasksAsync();
+        return Ok(tasks);
     }
 
     // GET: api/Tasks/5
     [HttpGet("{id}")]
     public async Task<ActionResult<UserTask>> GetTask(int id)
     {
-        var task = await _context.Tasks.FindAsync(id);
+        var task = await _taskService.GetTaskByIdAsync(id);
         if (task == null)
         {
             return NotFound();
         }
-        return task;
-    }
 
-    // POST: api/Tasks
-    [HttpPost]
-    public async Task<ActionResult<UserTask>> PostTask(UserTask task)
-    {
-        _context.Tasks.Add(task);
-        await _context.SaveChangesAsync();
-        return CreatedAtAction(nameof(GetTask), new { id = task.TaskId }, task);
+        return Ok(task);
     }
 
     // PUT: api/Tasks/5
     [HttpPut("{id}")]
     public async Task<IActionResult> PutTask(int id, UserTask task)
     {
-        if (id != task.TaskId)
+        try
+        {
+            await _taskService.UpdateTaskAsync(id, task);
+        }
+        catch (ArgumentException)
         {
             return BadRequest();
         }
-        _context.Entry(task).State = Microsoft.EntityFrameworkCore.EntityState.Modified;
-        try
+        catch (KeyNotFoundException)
         {
-            await _context.SaveChangesAsync();
+            return NotFound();
         }
-        catch (Exception)
-        {
-            if (!TaskExists(id))
-            {
-                return NotFound();
-            }
-            else
-            {
-                throw;
-            }
-        }
+
         return NoContent();
+    }
+
+    // POST: api/Tasks
+    [HttpPost]
+    public async Task<ActionResult<UserTask>> PostTask(UserTask task)
+    {
+        var createdTask = await _taskService.CreateTaskAsync(task);
+        return CreatedAtAction(nameof(GetTask), new { id = createdTask.TaskId }, createdTask);
     }
 
     // DELETE: api/Tasks/5
     [HttpDelete("{id}")]
     public async Task<IActionResult> DeleteTask(int id)
     {
-        var task = await _context.Tasks.FindAsync(id);
-        if (task == null)
+        try
+        {
+            await _taskService.DeleteTaskAsync(id);
+        }
+        catch (KeyNotFoundException)
         {
             return NotFound();
         }
-        _context.Tasks.Remove(task);
-        await _context.SaveChangesAsync();
+
         return NoContent();
-    }
-
-    [HttpGet("leader/{leaderId}/team-tasks")]
-    public async Task<ActionResult<IEnumerable<UserTask>>> GetTeamTasks(int leaderId)
-    {
-        var team = await _context.Teams
-            .Include(t => t.Members).ThenInclude(tm => tm.User).ThenInclude(u => u.AssignedTasks)
-            .FirstOrDefaultAsync(t => t.LeaderId == leaderId);
-
-        if (team == null)
-        {
-            return NotFound();
-        }
-
-        var tasks = team.Members
-            .SelectMany(tm => tm.User.AssignedTasks)
-            .ToList();
-
-        return Ok(tasks);
-    }
-
-    private bool TaskExists(int id)
-    {
-        return _context.Tasks.Any(e => e.TaskId == id);
     }
 }

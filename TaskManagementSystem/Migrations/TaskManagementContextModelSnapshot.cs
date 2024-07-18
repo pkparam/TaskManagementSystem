@@ -4,6 +4,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
+using TaskManagementSystem.Models;
 
 #nullable disable
 
@@ -165,6 +166,9 @@ namespace TaskManagementSystem.Migrations
                     b.Property<string>("Status")
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<string>("Priority")
+                        .HasColumnType("nvarchar(50)");
+
                     b.Property<string>("Title")
                         .HasColumnType("nvarchar(max)");
 
@@ -173,9 +177,13 @@ namespace TaskManagementSystem.Migrations
 
                     b.HasKey("TaskId");
 
+                    b.HasKey("AssignedEmployeeId");
+
+                    b.HasKey("ManagerId");
+
                     b.HasIndex("AssignedTo");
 
-                    b.ToTable("Tasks");
+                    b.ToTable("UserTasks");
                 });
 
             modelBuilder.Entity("TaskManagementSystem.Models.Team", b =>

@@ -3,48 +3,39 @@ using TaskManagementSystem.Models;
 
 public class TaskManagementContext : DbContext
 {
-    public TaskManagementContext(DbContextOptions<TaskManagementContext> options)
-        : base(options) { }
+    public TaskManagementContext(DbContextOptions<TaskManagementContext> options) : base(options) { }
 
-    // Parameterless constructor for design-time services
-    public TaskManagementContext() { }
-
-    public DbSet<User> Users { get; set; }
-    public DbSet<UserTask> Tasks { get; set; }
-    public DbSet<Team> Teams { get; set; }
-    public DbSet<Note> Notes { get; set; }
-    public DbSet<Attachment> Attachments { get; set; }
     public DbSet<TeamMembership> TeamMemberships { get; set; }
+    public DbSet<User> Users { get; set; }
+    public DbSet<UserTask> UserTasks { get; set; }
+    public DbSet<Attachment> Attachments { get; set; }
+    public DbSet<Note> Notes { get; set; }
+    public DbSet<Team> Teams { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
 
-        modelBuilder.Entity<UserTask>()
-            .HasKey(ut => ut.TaskId);
-
-        modelBuilder.Entity<Team>()
-            .HasKey(t => t.TeamId);
-
-        modelBuilder.Entity<TeamMembership>()
-            .HasKey(tm => tm.TeamMembershipId);
-
-        modelBuilder.Entity<TeamMembership>()
-            .HasOne(tm => tm.Team)
-            .WithMany(t => t.Members)
-            .HasForeignKey(tm => tm.TeamId)
-            .OnDelete(DeleteBehavior.NoAction);
-
-        modelBuilder.Entity<TeamMembership>()
-            .HasOne(tm => tm.User)
-            .WithMany(u => u.Teams)
-            .HasForeignKey(tm => tm.UserId)
-            .OnDelete(DeleteBehavior.NoAction);
+        modelBuilder.Entity<User>()
+            .HasMany(u => u.UserTasks)
+            .WithOne(t => t.AssignedEmployee)
+            .HasForeignKey(t => t.AssignedEmployeeId);
 
         modelBuilder.Entity<UserTask>()
-            .HasOne(ut => ut.AssignedUser)
-            .WithMany(u => u.AssignedTasks)
-            .HasForeignKey(ut => ut.AssignedTo)
-            .OnDelete(DeleteBehavior.NoAction);
+            .HasMany(t => t.Attachments)
+            .WithOne(a => a.UserTask)
+            .HasForeignKey(a => a.TaskId);
+
+        modelBuilder.Entity<UserTask>()
+            .HasMany(t => t.Notes)
+            .WithOne(n => n.UserTask)
+            .HasForeignKey(n => n.TaskId);
+        
+        modelBuilder.Entity<UserTask>()
+            .HasOne(t => t.AssignedEmployee)
+            .WithMany(u => u.UserTasks)
+            .HasForeignKey(t => t.AssignedEmployeeId)
+            .OnDelete(DeleteBehavior.Restrict);
     }
 }
+
